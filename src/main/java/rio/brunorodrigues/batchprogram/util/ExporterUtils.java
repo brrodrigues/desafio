@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-
 public class ExporterUtils {
 
     public enum FORMATTER {
@@ -23,44 +22,63 @@ public class ExporterUtils {
         return format.converter().format(value);
     }
 
-    public static String toStringSpaceLength(String value, int tamanho) {
-        if (value == null){
-            value = "";
+    public static String doRPAD(String value, int tamanho) {
+        if (value == null) {
+            value = " ";
         }
-        return String.format("%-"+tamanho+"s",value);
+        return String.format("%" + tamanho + "s", value);
+    }
+    
+    public static String doLPAD(String value, int tamanho) {
+        if (value == null) {
+            value = " ";
+        }
+        return String.format("%" + tamanho + "s", value);
     }
 
-    private static String toStringZeroLength(String value, int tamanho){
+    private static String doLPADZero(String value, int tamanho) {
 
-        if(value == null)
+        if (value == null) {
             value = "0";
+        }
+        Integer valueNew = new Integer(value);
 
-        return String.format("%-0"+tamanho+"s",value);
+        return String.format("%0" + tamanho + "d", valueNew);
+
+    }
+//    private static String doRPADZero(String value, int tamanho) {
+//
+//        if (value == null) {
+//            value = "0";
+//        }
+//        Integer valueNew = new Integer(value);
+//
+//        return String.format("%-0" + tamanho + "d", valueNew);
+//
+//    }
+
+    public static String doLPADZero(Number value, int tamanho, int decimal) {
+
+        if (value == null) {
+            value = BigDecimal.ZERO;
+        }
+
+        BigDecimal newValue = new BigDecimal(value.toString().replaceAll("[^0-9]", ""));
+
+        return doLPADZero(newValue.toString(), tamanho);
 
     }
 
-    public static String toNumberStringZeroLength(Number value, int tamanho, int decimal){
+    public static String doLPADZero(Number value, int tamanho) {
 
-        if (value == null)
+        if (value == null) {
             value = BigDecimal.ZERO;
-
-        BigDecimal newValue = new BigDecimal(value.toString()).multiply(BigDecimal.TEN.multiply(new BigDecimal(decimal)));
-
-        return toStringZeroLength(newValue.toString(),tamanho);
-
-    }
-
-    public static String toNumberStringZeroLength(Number value, int tamanho){
-
-
-        if (value == null)
-            value = BigDecimal.ZERO;
+        }
 
         BigDecimal newValue = new BigDecimal(value.toString());
 
-        return toStringZeroLength(newValue.toString(),tamanho);
+        return doLPADZero(newValue.toString(), tamanho);
 
     }
-
 
 }

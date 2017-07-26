@@ -6,6 +6,6 @@ import rio.brunorodrigues.batchprogram.model.Status;
 
 public interface ItemRepository extends PagingAndSortingRepository<ItemVenda, Integer>{
 
-    public ItemVenda findByVendaStatus(Status status);
+    public ItemVenda findTop1ByVendaStatus(Status status);
 }
 				

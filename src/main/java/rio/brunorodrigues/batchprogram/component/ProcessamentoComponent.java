@@ -1,5 +1,6 @@
 package rio.brunorodrigues.batchprogram.component;
 
+import java.io.File;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,109 +18,112 @@ import rio.brunorodrigues.batchprogram.util.ExporterUtils;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import rio.brunorodrigues.batchprogram.util.UserHomeUtils;
 
 @Component
 public class ProcessamentoComponent {
 
     private static final Logger LOGGER = Logger.getLogger(ProcessamentoComponent.class.getName());
 
-    @Autowired private VendaRepository vendaRepository;
-    @Autowired private ItemRepository itemRepository;
-    @Autowired private ProcessamentoRepository processamentoRepository;
+    @Autowired
+    private VendaRepository vendaRepository;
+    @Autowired
+    private ItemRepository itemRepository;
+    @Autowired
+    private ProcessamentoRepository processamentoRepository;
 
     @Value("${app.output-file}")
     private String OUTPUT_PATH;
 
-    @Value("${app.counter-file-line}")
-    private Integer COUNTER_FILE;
-
-    private static Integer currentLine = 0;
+    private Long currentLine;
 
     private static final String MASK_FILE = "%s_out_sale_%s.txt";
 
     AtomicInteger fileNameCount = new AtomicInteger();
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedRateString = "${app.delay}")
     public void doPerformAction() {
 
-        ItemVenda item = itemRepository.findByVendaStatus(Status.NOK);
+        ItemVenda item = itemRepository.findTop1ByVendaStatus(Status.PENDENTE);
 
+        if (checkItemVenda(item)) {
+            return;
+        }
 
-        synchronized (currentLine){
+        checkUserPath();
 
-            if (currentLine <= COUNTER_FILE){
-                try {
-                    doIt(item, false);
-                    currentLine++;
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }else {
-                try {
-                    currentLine = 0;
-                    doIt(item, true);
-                    currentLine++;
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
+        int numFile = fileNameCount.get();
+
+        String fileName = String.format(MASK_FILE, DateUtils.toYYYYMMDDDateFormat(), numFile);
+
+        try {
+            currentLine = Files.lines(Paths.get(fileName)).count();
+
+            if (currentLine >= 10) {
+                numFile = fileNameCount.incrementAndGet();
+                fileName = String.format(MASK_FILE, DateUtils.toYYYYMMDDDateFormat(), numFile);
+            }
+
+            LOGGER.log(Level.INFO, "Opening file {0} to editing", fileName);
+
+            FileOutputStream outputStream = new FileOutputStream(String.format(OUTPUT_PATH + File.separator + fileName), true);
+
+            outputStream.write(writeLine(item));
+            doFinishVenda(item.getVenda(), fileName);
+
+        } catch (IOException ex) {
+            Logger.getLogger(ProcessamentoComponent.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    private boolean checkItemVenda(ItemVenda item) {
+        if (item == null) {
+            LOGGER.log(Level.INFO, "It does not exist output item");
+            return true;
+        }
+        return false;
+    }
+
+    private void checkUserPath() {
+        if (OUTPUT_PATH == null || OUTPUT_PATH.equals("")) {
+            try {
+                OUTPUT_PATH = UserHomeUtils.getPath();
+            } catch (Exception ex) {
+                LOGGER.log(Level.SEVERE, "Closing application...", ex);
+                System.exit(0);
             }
         }
     }
 
-    private void doIt(ItemVenda venda, boolean newFile) throws FileNotFoundException {
-
-        int numFile = numFile = fileNameCount.get();
-
-        if (newFile){
-            numFile =fileNameCount.incrementAndGet();
-        }
-
-        String fileName = String.format(MASK_FILE, DateUtils.toYYYYMMDDDateFormat(), numFile);
-
-        FileOutputStream outputStream = new FileOutputStream(String.format(OUTPUT_PATH + System.lineSeparator() + fileName));
-
-        try {
-            outputStream.write(doMountLineFile(venda));
-            doFinishVenda(venda, fileName);
-
-            if (outputStream != null)
-                outputStream.close();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, " Fail at processing item {0}. Next item.", venda.toString() );
-        }
-
-
-    }
-
-
-    private byte[] doMountLineFile(ItemVenda item){
+    private byte[] writeLine(ItemVenda item) {
         Venda venda = item.getVenda();
 
         StringBuilder tmp = new StringBuilder();
 
-        tmp.append(ExporterUtils.toNumberStringZeroLength(venda.getId(), 10));
+        tmp.append(ExporterUtils.doLPADZero(venda.getId(), 10));
         tmp.append(ExporterUtils.toDateString(venda.getData(), ExporterUtils.FORMATTER.DDMMYYYY));
-        tmp.append(ExporterUtils.toNumberStringZeroLength(venda.getLoja(), 3 ));
-        tmp.append(ExporterUtils.toNumberStringZeroLength(venda.getPdv(), 2 ));
-        tmp.append(ExporterUtils.toStringSpaceLength(item.getProduto(), 2 ));
-        tmp.append(ExporterUtils.toNumberStringZeroLength(item.getPrecoUnitario(), 4, 2 ));
-        tmp.append(ExporterUtils.toNumberStringZeroLength(item.getValorDesconto(), 4, 2 ));
-        tmp.append(ExporterUtils.toNumberStringZeroLength(item.getValorTotal(), 4, 2 ));
+        tmp.append(ExporterUtils.doLPADZero(venda.getLoja(), 4));
+        tmp.append(ExporterUtils.doLPADZero(venda.getPdv(), 3));
+        tmp.append(ExporterUtils.doRPAD(item.getProduto(), 10));
+        tmp.append(ExporterUtils.doLPADZero(item.getPrecoUnitario(), 5, 2));
+        tmp.append(ExporterUtils.doLPADZero(item.getValorDesconto(), 5, 2));
+        tmp.append(ExporterUtils.doLPADZero(item.getValorTotal(), 5, 2));
+        tmp.append("\n");
 
-
-        return  tmp.toString().getBytes();
+        return tmp.toString().getBytes();
 
     }
 
-    public void doFinishVenda(ItemVenda item, String fileName) {
+    public void doFinishVenda(Venda venda, String fileName) {
         Processamento processamento = new Processamento();
 
-        Venda venda = item.getVenda();
-
-        processamento.setData(item.getVenda().getData());
+        processamento.setData(venda.getData());
         processamento.setLoja(venda.getLoja());
         processamento.setPdv(venda.getPdv());
         processamento.setNomeArquivo(fileName);
@@ -128,7 +132,6 @@ public class ProcessamentoComponent {
         processamentoRepository.save(processamento);
 
         vendaRepository.save(venda);
-
 
     }
 }

@@ -1,0 +1,54 @@
+## YAML Template.
+---
+debug: true
+
+app:
+    output-file: ${OUTPUT_PATH:}
+    delay: ${MINUTE_DELAY:100000}
+    
+spring:
+    profiles:
+        active: postgresql-db
+    jpa:
+        hibernate:
+#            ddl-auto: create-drop
+            ddl-auto: create
+logging:
+    level: FINEST
+
+---
+spring:
+    profiles: mysql-db
+    data:
+        jpa:
+            repositories:
+                enabled: true
+    jpa:
+        generate-ddl: true
+        show-sql: true
+        hibernate:
+            dialect: org.hibernate.dialect.MySQLDialect
+    datasource:
+        url: jdbc:mysql://localhost:3306/mysql
+        username: ${DB_USER:root}
+        password: ${DB_PASSWORD:admin}
+        driverClassName: com.mysql.jdbc.Driver
+
+---
+
+spring:
+    profiles: postgresql-db
+    data:
+        jpa:
+            repositories:
+                enabled: true
+    datasource:
+        url: jdbc:postgresql://localhost:5432/postgres
+        username: ${DB_USER:postgres}
+        password: ${DB_PASSWORD:admin}
+        driverClassName: org.postgresql.Driver
+    jpa:
+        generate-ddl: true
+        show-sql: true
+        hibernate:
+            dialect: org.hibernate.dialect.PostgreSQLDialect
