@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@EnableJpaRepositories("rio.brunorodrigues.batchprogram.resource")
+@EnableJpaRepositories("rio.brunorodrigues.batchprogram.repository")
 public class BatchProgramApplication {
 
 	public static void main(String[] args) {

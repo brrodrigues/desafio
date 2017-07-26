@@ -1,14 +1,8 @@
 package rio.brunorodrigues.batchprogram.model;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
 @Entity		
 @Table(name="tb_processamento")
@@ -26,8 +20,6 @@ public class Processamento implements Serializable	 {
 	private Integer pdv;
 	@Column(name="nome_arquivo")
 	private String nomeArquivo;
-	@Column(name="status")
-	private Status status;
 
 	public Integer getId() {
 		return id;
@@ -69,12 +61,5 @@ public class Processamento implements Serializable	 {
 		this.nomeArquivo = nomeArquivo;
 	}
 
-	public Status getStatus() {
-		return status;
-	}
-
-	public void setStatus(Status status) {
-		this.status = status;
-	}
 
 }
