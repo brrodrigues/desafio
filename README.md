@@ -68,10 +68,6 @@ java -DDB_HOST=localhost -DDB_PORT=3306 -DDB_SCHEMA=mysql -DDB_USER=root -DDB_PA
 
 A variável DELAY é opcional. Padrão definido: 30000 (30 seg)
 
-## Endpoint - Registro de Venda
-```
-http://localhost:8080/vendas
-```
 ## Report
 ```
 http://localhost:8080/reportController
