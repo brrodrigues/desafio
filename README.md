@@ -55,12 +55,12 @@ O profile padrao para execucao deste desafio esta definido para mysql.
 --spring.profiles.active=mysql
 ```
 ## Exemplo de linha de comando
+### postgresql
 ```
-### Profile postgresql
 java -DDB_HOST=localhost -DDB_PORT=5432 -DDB_SCHEMA=postgres -DDB_USER=postgres -DDB_PASSWORD=postgres \
 -DDELAY=60000 -DOUTPUT_PATH=c:\\tmp -jar target/batchprogram-0.0.1-SNAPSHOT.jar --spring.profiles.active=postgresql
 ```
-### Profile mysql
+### mysql
 ```
 java -DDB_HOST=localhost -DDB_PORT=3306 -DDB_SCHEMA=mysql -DDB_USER=root -DDB_PASSWORD=123 \
 -DDELAY=60000 -DOUTPUT_PATH=c:\\tmp -jar target/batchprogram-0.0.1-SNAPSHOT.jar --spring.profiles.active=mysql
@@ -76,8 +76,6 @@ http://localhost:8080/vendas
 ```
 http://localhost:8080/reportController
 ```
-
-
 
 ## Autor
 
