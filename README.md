@@ -51,14 +51,14 @@ O profile padrao para execucao deste desafio esta definido para mysql.
 ```
 ## Exemplo de linha de comando
 ```
-###Profile postgresql
-java -DDB_HOST=localhost -DDB_PORT=5432 -DDB_SCHEMA=postgres -DDB_USER=postgres -DDB_PASSWORD=postgres -DDELAY=60000 \
--DOUTPUT_PATH=c:\\tmp -jar target/batchprogram-0.0.1-SNAPSHOT.jar --spring.profiles.active=postgresql 
+### Profile postgresql
+java -DDB_HOST=localhost -DDB_PORT=5432 -DDB_SCHEMA=postgres -DDB_USER=postgres -DDB_PASSWORD=postgres \
+-DDELAY=60000 -DOUTPUT_PATH=c:\\tmp -jar target/batchprogram-0.0.1-SNAPSHOT.jar --spring.profiles.active=postgresql
 ```
-
-###Profile mysql
-java -DDB_HOST=localhost -DDB_PORT=3306 -DDB_SCHEMA=mysql -DDB_USER=root -DDB_PASSWORD=123 -DDELAY=60000 \
--DOUTPUT_PATH=c:\\tmp -jar target/batchprogram-0.0.1-SNAPSHOT.jar --spring.profiles.active=mysql 
+### Profile mysql
+```
+java -DDB_HOST=localhost -DDB_PORT=3306 -DDB_SCHEMA=mysql -DDB_USER=root -DDB_PASSWORD=123 \
+-DDELAY=60000 -DOUTPUT_PATH=c:\\tmp -jar target/batchprogram-0.0.1-SNAPSHOT.jar --spring.profiles.active=mysql
 ```
 
 A variável DELAY é opcional. Padrão definido: 30000 (30 seg)
