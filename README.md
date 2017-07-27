@@ -18,22 +18,31 @@ Este desafio visava implementar as seguintes questões:
 
 ```
 git clone https://github.com/brrodrigues/desafio.git
+cd desafio
 ```
 
-## Execução
+## Profile de execução
 
-### Postgresql
+O profile padrao para execucao deste desafio esta definido para mysql. 
+
+### Profile: postgresql
 ```
 mvn clean spring-boot:run --spring.profiles.active=postgresql-db
 ```
-### Mysql
+### Profile: mysql(Padrao)
 ```
 mvn clean spring-boot:run --spring.profiles.active=mysql-db
 ```
-### Tela Operacional
+## Endpoint - Registro de Venda
+```
+http://localhost:8080/vendas
+```
+## Report
 ```
 http://localhost:8080/reportController
 ```
+
+
 
 ## Autor
 
