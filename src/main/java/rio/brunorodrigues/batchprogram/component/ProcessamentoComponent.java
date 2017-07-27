@@ -1,6 +1,7 @@
 package rio.brunorodrigues.batchprogram.component;
 
-import java.io.File;
+import java.io.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,11 +16,11 @@ import rio.brunorodrigues.batchprogram.repository.VendaRepository;
 import rio.brunorodrigues.batchprogram.util.DateUtils;
 import rio.brunorodrigues.batchprogram.util.ExporterUtils;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Paths;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,46 +41,98 @@ public class ProcessamentoComponent {
     @Value("${app.output-file}")
     private String OUTPUT_PATH;
 
-    private Long currentLine;
-
     private static final String MASK_FILE = "%s_out_sale_%s.txt";
 
-    AtomicInteger fileNameCount = new AtomicInteger();
+    static AtomicInteger fileNameCount = new AtomicInteger(1);
 
     @Scheduled(fixedRateString = "${app.delay}")
     public void doPerformAction() {
 
-        ItemVenda item = itemRepository.findTop1ByVendaStatus(Status.PENDENTE);
-
-        if (checkItemVenda(item)) {
-            return;
-        }
-
         checkUserPath();
 
-        int numFile = fileNameCount.get();
-
-        String fileName = String.format(MASK_FILE, DateUtils.toYYYYMMDDDateFormat(), numFile);
+        Long currentLine = 0l;
 
         try {
-            currentLine = Files.lines(Paths.get(fileName)).count();
 
-            if (currentLine >= 10) {
-                numFile = fileNameCount.incrementAndGet();
-                fileName = String.format(MASK_FILE, DateUtils.toYYYYMMDDDateFormat(), numFile);
+            ItemVenda item = itemRepository.findTop1ByVendaStatus(Status.PENDENTE);
+
+            if (item == null){
+                LOGGER.log(Level.INFO, "No data to process...");
+                return ;
             }
 
-            LOGGER.log(Level.INFO, "Opening file {0} to editing", fileName);
+            List<ItemVenda> itens = itemRepository.findByVenda(item.getVenda());
 
-            FileOutputStream outputStream = new FileOutputStream(String.format(OUTPUT_PATH + File.separator + fileName), true);
 
-            outputStream.write(writeLine(item));
-            doFinishVenda(item.getVenda(), fileName);
+            StringBuilder fileNames = new StringBuilder();
+
+            String fileName = getFileName(fileNameCount.get());
+
+            fileNames.append(fileName);
+
+            if (Files.exists(Paths.get(fileName), LinkOption.NOFOLLOW_LINKS)){
+                currentLine = Files.lines(Paths.get(fileName)).count();
+            }
+            LOGGER.log(Level.INFO, " file {0} contains {1} lines.", new Object [] {fileName, currentLine});
+
+            FileOutputStream outputStream = createOrOpenFileName(fileNameCount, false);
+
+            if (currentLine == 10) {
+                LOGGER.log(Level.INFO, "The file achieved {0} lines. Creating a new file. ", 10);
+                outputStream = createOrOpenFileName(fileNameCount, true);
+            }
+
+            for (int i = 0; i < itens.size(); i++) {
+
+                outputStream.write(writeLine(itens.get(i)));
+                currentLine++;
+
+                LOGGER.log(Level.INFO,"current {0} result mod currentLine % 10 :{1} ", new Object [] {currentLine, currentLine % 10});
+                if (currentLine % 10 == 0){
+                    LOGGER.log(Level.INFO,"File achieved {0} lines. Creating a new file.", 10);
+                    outputStream.close();//Closing current file
+                    outputStream  = createOrOpenFileName(fileNameCount,true);
+
+                    //The output sales could processed in more files, so I decide to write them all.
+                    fileNames.append(",").append(getFileName(fileNameCount.get()));
+
+                    currentLine = 0L;
+                }
+
+            }
+
+            outputStream.close();
+
+            doFinishVenda(item.getVenda(), fileNames.toString());
+
 
         } catch (IOException ex) {
-            Logger.getLogger(ProcessamentoComponent.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
         }
 
+    }
+
+    private String getFileName(int i) {
+        String maskedFileName = String.format(MASK_FILE, DateUtils.toYYYYMMDDDateFormat(), i);
+        String fileName= String.format(OUTPUT_PATH + File.separator + maskedFileName);
+        return fileName;
+    }
+
+    private FileOutputStream createOrOpenFileName(AtomicInteger fileNameCount, boolean newFile) throws FileNotFoundException {
+
+        int count= fileNameCount.get();
+
+        if (newFile){
+            count = fileNameCount.incrementAndGet();
+        }
+
+
+        String fileName = getFileName(count);
+
+        LOGGER.log(Level.INFO, "Opening file {0} to editing", fileName);
+
+        FileOutputStream outputStream = new FileOutputStream(fileName, true);//Creating a new file
+        return outputStream;
     }
 
     private boolean checkItemVenda(ItemVenda item) {
@@ -123,10 +176,11 @@ public class ProcessamentoComponent {
     public void doFinishVenda(Venda venda, String fileName) {
         Processamento processamento = new Processamento();
 
-        processamento.setData(venda.getData());
+        processamento.setData(new Date());
         processamento.setLoja(venda.getLoja());
         processamento.setPdv(venda.getPdv());
         processamento.setNomeArquivo(fileName);
+        processamento.setStatus(Status.OK);
         venda.setStatus(Status.OK);
 
         processamentoRepository.save(processamento);

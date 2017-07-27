@@ -20,6 +20,9 @@ public class Processamento implements Serializable	 {
 	private Integer pdv;
 	@Column(name="nome_arquivo")
 	private String nomeArquivo;
+	@Enumerated(EnumType.STRING)
+	private Status status;
+
 
 	public Integer getId() {
 		return id;
@@ -62,4 +65,11 @@ public class Processamento implements Serializable	 {
 	}
 
 
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
 }

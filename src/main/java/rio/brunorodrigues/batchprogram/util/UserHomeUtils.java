@@ -2,8 +2,8 @@ package rio.brunorodrigues.batchprogram.util;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * To change this templates file, choose Tools | Templates
+ * and open the templates in the editor.
  */
 
 /**
@@ -16,7 +16,7 @@ public class UserHomeUtils {
         String OS = System.getProperty("os.name");
         
         if (OS.contains("Linux")){
-            return "~";
+            return System.getProperty("user.home");
         }else if (OS.contains("Windows")){
             return System.getProperty("user.home");
         }

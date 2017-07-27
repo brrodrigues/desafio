@@ -41,6 +41,35 @@ public class TypeConverter {
 		
 
 	}
+
+	public static String toString(Integer value) {
+
+		if (value == null){
+			return "";
+		}
+
+		return value.toString();
+	}
+
+	public static String toString(Number value) {
+
+		if (value == null){
+			return "";
+		}
+
+		BigDecimal bigDecimal = new BigDecimal(value.toString()).setScale(2);
+
+		return bigDecimal.toString();
+	}
+
+	public  static String toString(Date value) throws Exception {
+		return DateUtils.toDateString(value);
+	}
+
+	public  static String toStringDateTime(Date value) throws Exception {
+		return DateUtils.toDateString(value);
+	}
+
 	public static Integer toStringInteger(String value) throws ErrorParseException {
 
 		Integer newBigDecimal = null;
@@ -54,6 +83,7 @@ public class TypeConverter {
 		
 
 	}
+
 
 
 }

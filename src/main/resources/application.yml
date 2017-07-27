@@ -4,11 +4,11 @@ debug: true
 
 app:
     output-file: ${OUTPUT_PATH:}
-    delay: ${MINUTE_DELAY:100000}
+    delay: ${MINUTE_DELAY:3000}
     
 spring:
     profiles:
-        active: postgresql-db
+        active: mysql-db
     jpa:
         hibernate:
 #            ddl-auto: create-drop
