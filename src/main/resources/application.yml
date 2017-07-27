@@ -1,54 +1,77 @@
 ## YAML Template.
 ---
-debug: true
+debug: false
 
 app:
     output-file: ${OUTPUT_PATH:}
-    delay: ${MINUTE_DELAY:3000}
-    
+    delay: ${DELAY:30000}
+    db:
+      host: ${DB_HOST:localhost}
+      port: ${DB_PORT}
+      schema: ${DB_SCHEMA}
+      password: ${DB_PASSWORD}
+      username: ${DB_USER}
+
 spring:
-    profiles:
-        active: mysql-db
-    jpa:
-        hibernate:
-#            ddl-auto: create-drop
-            ddl-auto: create
-logging:
-    level: FINEST
+  profiles:
+    active: mysql
+  datasource:
+    initialize: true
+  jpa:
+    hibernate:
+      ddl-auto: create
 
 ---
 spring:
-    profiles: mysql-db
-    data:
-        jpa:
-            repositories:
-                enabled: true
+    profiles: mysql
     jpa:
-        generate-ddl: true
-        show-sql: true
-        hibernate:
-            dialect: org.hibernate.dialect.MySQLDialect
+      generate-ddl: true
+      show-sql: true
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
     datasource:
-        url: jdbc:mysql://localhost:3306/mysql
-        username: ${DB_USER:root}
-        password: ${DB_PASSWORD:admin}
+        platform: mysql
+        url: jdbc:mysql://${app.db.host}:${app.db.port:3306}/${app.db.schema:mysql}
+        username: ${app.db.username:root}
+        password: ${app.db.password:admin}
         driverClassName: com.mysql.jdbc.Driver
+    data:
+      jpa:
+        repositories:
+          enabled: true
 
 ---
-
 spring:
-    profiles: postgresql-db
-    data:
-        jpa:
-            repositories:
-                enabled: true
-    datasource:
-        url: jdbc:postgresql://localhost:5432/postgres
-        username: ${DB_USER:postgres}
-        password: ${DB_PASSWORD:admin}
-        driverClassName: org.postgresql.Driver
+  profiles: postgresql
+  datasource:
+    platform: postgresql
+    url: jdbc:postgresql://${app.db.host}:${app.db.port:5432}/${app.db.schema:postgres}
+    username: ${app.db.username:postgres}
+    password: ${app.db.password:admin}
+    driverClassName: org.postgresql.Driver
+  jpa:
+    generate-ddl: true
+    show-sql: true
+    hibernate:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
     jpa:
-        generate-ddl: true
-        show-sql: true
-        hibernate:
-            dialect: org.hibernate.dialect.PostgreSQLDialect
+     repositories:
+       enabled: true
+
+---
+spring:
+  profiles: h2
+  data:
+    jpa:
+      repositories:
+        enabled: true
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;
+    platform: h2
+    driverClassName: org.h2.Driver
+  jpa:
+    generate-ddl: true
+    show-sql: true
+    hibernate:
+      dialect: org.hibernate.dialect.H2Dialect
