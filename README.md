@@ -17,7 +17,7 @@ Este desafio visava implementar as seguintes questões:
 ## Instalação 
 
 ```
-git pull https://github.com/brrodrigues/desafio.git
+git clone https://github.com/brrodrigues/desafio.git
 ```
 
 ## Execução
