@@ -1,6 +1,6 @@
 # Desafio #1
 
-Este desafio visava implementar as seguintes questões: * Realizar um exercício simples, de maneira a comprovar conhecimentos básicos nas tecnologias.
+Este desafio visava implementar as seguintes questões: 
 
 * Terminar o desafio até 72 horas.
 * Produzir e publicar o material no GitHub para torná-lo disponivel, funcional e executável por um simples comando. Como git pull, mvn package , etc.
@@ -17,7 +17,7 @@ Este desafio visava implementar as seguintes questões: * Realizar um exercício
 ## Instalação 
 
 ```
-git pull https://github.com/brrodrigues/desafio.git
+git clone https://github.com/brrodrigues/desafio.git
 ```
 
 ## Execução
