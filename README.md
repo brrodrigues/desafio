@@ -40,12 +40,17 @@ mvn clean package
 ```
 
 ## Profile de execução
+
 O profile padrao para execucao deste desafio esta definido para mysql.
+
 ### Profile: postgresql
+
 ```
 --spring.profiles.active=postgresql
 ```
+
 ### Profile: mysql(Padrao)
+
 ```
 --spring.profiles.active=mysql
 ```
